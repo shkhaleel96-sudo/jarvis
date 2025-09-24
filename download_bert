@@ -1,0 +1,44 @@
+name: Download BERT Model
+
+on:
+  push:
+    branches: [main]  # Trigger on pushes to main branch
+  pull_request:
+    branches: [main]  # Trigger on pull requests to main
+
+jobs:
+  download:
+    runs-on: ubuntu-latest  # Use Ubuntu for better compatibility
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4  # Updated to latest version
+
+    - name: Set up Python
+      uses: actions/setup-python@v5  # Updated to latest version
+      with:
+        python-version: '3.10'  # Matches your local environment
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install transformers tensorflow tf-keras safetensors tensorflow-hub  # Added tensorflow-hub here
+        # Optional: Install other dependencies if needed (e.g., for jarvis.py)
+        pip install wikipedia pyttsx3 pyaudio spacy fuzzywuzzy pillow matplotlib
+        python -m spacy download en_core_web_sm
+
+    - name: Run download_bert.py
+      run: python download_bert.py  # Assumes download_bert.py is in the repository root
+
+    - name: Verify model files
+      run: |
+        ls -la bert_model/  # List files to confirm tf_model.h5 exists
+        echo "Model files:"
+        ls bert_model/
+
+    - name: Upload model artifacts
+      uses: actions/upload-artifact@v4  # Updated to latest version
+      with:
+        name: bert-model
+        path: bert_model/  # Upload the entire directory
+        retention-days: 7  # Keep artifact for 7 days
